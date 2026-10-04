@@ -6,11 +6,19 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import type { ApiResponse, CreateProfileRequest } from '@/lib/types';
+import { AvatarUploader } from './AvatarUploader';
+import { uploadApi } from '@/lib/api';
+import type { ApiResponse, CreateProfileRequest, UpdateProfileRequest } from '@/lib/types';
 
 interface ProfileFormProps {
-    initialData?: CreateProfileRequest;
-    onSubmit: (data: CreateProfileRequest) => Promise<ApiResponse<unknown>>;
+    initialData?: {
+        fullName: string;
+        bio: string;
+        email?: string | null;
+        location?: string | null;
+        avatarUrl?: string | null;
+    };
+    onSubmit: (data: CreateProfileRequest | UpdateProfileRequest) => Promise<ApiResponse<unknown>>;
     mode: 'create' | 'edit';
     title: string;
 }
@@ -18,19 +26,20 @@ interface ProfileFormProps {
 export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormProps) {
     const router = useRouter();
 
-    const [form, setForm] = useState<CreateProfileRequest>({
+    const [form, setForm] = useState({
         fullName: initialData?.fullName || '',
         bio: initialData?.bio || '',
-        avatarUrl: initialData?.avatarUrl || '',
         email: initialData?.email || '',
         location: initialData?.location || '',
     });
+
+    const [ownerPassword, setOwnerPassword] = useState('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<string>('');
 
-    function handleChange(
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) {
+    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
 
@@ -38,9 +47,35 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
         e.preventDefault();
         setLoading(true);
         setErrors([]);
+        setStatus('');
 
         try {
-            const res = await onSubmit(form);
+            let avatarUrl: string | null = null;
+
+            if (mode === 'edit' && selectedFile) {
+                setStatus('Uploading avatar...');
+
+                const uploadRes = await uploadApi.uploadAvatar(selectedFile);
+
+                if (!uploadRes.success || !uploadRes.path) {
+                    setErrors(!uploadRes || [uploadRes.message || 'Upload failed']);
+                    setLoading(false);
+                    setStatus('');
+                    return;
+                }
+
+                avatarUrl = uploadRes.path;
+            }
+
+            setStatus('Saving profile...');
+
+            const payload =
+                mode === 'create'
+                    ? { ...form, ownerPassword }
+                    : { ...form, avatarUrl };
+
+            const res = await onSubmit(payload);
+
             if (res.success) {
                 router.push('/admin/profiles');
                 router.refresh();
@@ -52,6 +87,7 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
             setErrors(apiErr?.errors || [apiErr?.message || 'Something went wrong']);
         } finally {
             setLoading(false);
+            setStatus('');
         }
     }
 
@@ -67,20 +103,23 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
                     </p>
                 </div>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-lg">
+                <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-lg space-y-6">
                     {errors.length > 0 && (
-                        <div className="mb-6">
-                            <Alert variant="error" title="Please fix the following issues:" messages={errors} />
-                        </div>
+                        <Alert variant="error" title="Please fix the following issues:" messages={errors} />
                     )}
-
+                    {mode === 'edit' && (
+                        <AvatarUploader
+                            currentAvatarUrl={initialData?.avatarUrl}
+                            selectedFile={selectedFile}
+                            onFileSelected={setSelectedFile}
+                        />
+                    )}
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <Input
                             label="Full Name"
                             name="fullName"
                             value={form.fullName}
                             onChange={handleChange}
-                            placeholder="e.g., Ali Aeini"
                             required
                             maxLength={200}
                         />
@@ -90,7 +129,6 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
                             name="bio"
                             value={form.bio}
                             onChange={handleChange}
-                            placeholder="Tell us about yourself..."
                             required
                             rows={4}
                             maxLength={2000}
@@ -102,18 +140,7 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
                             type="email"
                             value={form.email}
                             onChange={handleChange}
-                            placeholder="e.g., ali@example.com"
                             maxLength={200}
-                        />
-
-                        <Input
-                            label="Avatar URL"
-                            name="avatarUrl"
-                            type="url"
-                            value={form.avatarUrl}
-                            onChange={handleChange}
-                            placeholder="https://example.com/avatar.jpg"
-                            maxLength={500}
                         />
 
                         <Input
@@ -121,13 +148,24 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
                             name="location"
                             value={form.location}
                             onChange={handleChange}
-                            placeholder="e.g., Tehran, Iran"
                             maxLength={200}
                         />
 
+                        {mode === 'create' && (
+                            <Input
+                                label="Owner Password"
+                                name="ownerPassword"
+                                type="password"
+                                value={ownerPassword}
+                                onChange={(e) => setOwnerPassword(e.target.value)}
+                                placeholder="At least 8 characters"
+                                required
+                            />
+                        )}
+
                         <div className="flex gap-3 pt-4 border-t border-gray-800">
                             <Button type="submit" loading={loading} variant="primary">
-                                {mode === 'create' ? 'Create Profile' : 'Save Changes'}
+                                {status || (mode === 'create' ? 'Create Profile' : 'Save Changes')}
                             </Button>
                             <Button
                                 type="button"

@@ -16,6 +16,7 @@ export interface AuthResponse {
     refreshToken: string;
     accessTokenExpiresAt: string;
     user: UserInfo;
+    profileId: string
 }
 
 export interface ApiResponse<T> {
@@ -77,6 +78,8 @@ export interface UpdateProfileRequest {
     jobTitle?: string | null;
     yearsOfExperience?: number | null;
     availableForHire: boolean;
+    avatarUrl?: string | null;
+    coverImageUrl?: string | null;
     email?: string | null;
     phoneNumber?: string | null;
     location?: string | null;
@@ -186,6 +189,13 @@ export interface AuthUser {
     email: string;
     fullName: string | null;
     role: string;
+    profileId?: string;
+}
+
+export interface RegisterRequest {
+    fullName: string;
+    email: string;
+    password: string;
 }
 
 export interface LookupSkillCategory {

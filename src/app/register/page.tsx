@@ -88,14 +88,14 @@ export default function RegisterPage() {
                             Sign Up
                         </Button>
                     </form>
+                    <p className="text-center text-sm text-muted mt-6">
+                        Already have an account?{' '}
+                        <Link href="/login" className="text-accent hover:underline">
+                            Sign In
+                        </Link>
+                    </p>
                 </div>
             </div>
-            <p className="text-center text-sm text-muted mt-6">
-                Already have an account?{' '}
-                <Link href="/login" className="text-accent hover:underline">
-                    Sign In
-                </Link>
-            </p>
         </div>
     );
 }

@@ -92,7 +92,7 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
     }
 
     return (
-        <div className="min-h-screen bg-gray-950 py-12 px-4">
+        <div className="min-h-screen bg-gray-950">
             <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-100">{title}</h1>

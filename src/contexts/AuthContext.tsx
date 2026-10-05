@@ -8,8 +8,13 @@ import {
     useState,
     ReactNode,
 } from 'react';
-import type { AuthResponse, AuthUser, LoginRequest } from '@/lib/types';
 import { authApi } from '@/lib/authApi';
+import type {
+    AuthUser,
+    AuthResponse,
+    LoginRequest,
+    RegisterRequest,
+} from '@/lib/types';
 
 interface AuthContextValue {
     user: AuthUser | null;
@@ -17,6 +22,7 @@ interface AuthContextValue {
     isAuthenticated: boolean;
     isLoading: boolean;
     login: (data: LoginRequest) => Promise<void>;
+    register: (data: RegisterRequest) => Promise<void>;
     logout: () => void;
 }
 
@@ -37,10 +43,7 @@ function saveToStorage(user: AuthUser, data: AuthResponse) {
 }
 
 function clearStorage() {
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
-    localStorage.removeItem(STORAGE_KEYS.USER);
+    Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
 }
 
 function loadFromStorage(): { user: AuthUser | null; accessToken: string | null } {
@@ -78,22 +81,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
+    function buildAuthUser(data: AuthResponse): AuthUser {
+        return {
+            id: data.user.id,
+            email: data.user.email,
+            fullName: data.user.fullName,
+            role: data.user.role,
+            profileId: data.profileId,
+        };
+    }
+
     const login = useCallback(async (data: LoginRequest) => {
         const res = await authApi.login(data);
-
         if (!res.success || !res.data) {
             throw new Error(res.errors?.[0] || res.message || 'Login failed');
         }
 
-        const userData: AuthUser = {
-            id: res.data.user.id,
-            email: res.data.user.email,
-            fullName: res.data.user.fullName,
-            role: res.data.user.role,
-        };
-
+        const userData = buildAuthUser(res.data);
         saveToStorage(userData, res.data);
+        setUser(userData);
+        setAccessToken(res.data.accessToken);
+    }, []);
 
+    const register = useCallback(async (data: RegisterRequest) => {
+        const res = await authApi.register(data);
+        if (!res.success || !res.data) {
+            throw new Error(res.errors?.[0] || res.message || 'Registration failed');
+        }
+
+        const userData = buildAuthUser(res.data);
+        saveToStorage(userData, res.data);
         setUser(userData);
         setAccessToken(res.data.accessToken);
     }, []);
@@ -110,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user && !!accessToken,
         isLoading,
         login,
+        register,
         logout,
     };
 

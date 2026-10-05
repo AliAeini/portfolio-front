@@ -17,7 +17,6 @@ import type {
     JobCategory,
 } from '@/lib/types';
 import { uploadApi } from '@/lib/uploadApi';
-import { profileApi } from '@/lib/profileApi';
 import { jobCategoryApi } from '@/lib/jobCategoryApi';
 
 interface ProfileFormProps {
@@ -53,6 +52,7 @@ export function ProfileForm({
         nationality: initialData?.nationality || '',
         languages: initialData?.languages || '',
         hobbies: initialData?.hobbies || '',
+        coverImageUrl: initialData?.coverImageUrl || '',
     });
 
     const [ownerPassword, setOwnerPassword] = useState('');
@@ -87,7 +87,9 @@ export function ProfileForm({
         setStatus('');
 
         try {
-            if (mode === 'edit' && selectedFile && profileId) {
+            let avatarUrl = initialData?.avatarUrl ?? null;
+
+            if (selectedFile) {
                 setStatus('Uploading avatar...');
                 const uploadRes = await uploadApi.uploadAvatar(selectedFile);
 
@@ -98,20 +100,9 @@ export function ProfileForm({
                     return;
                 }
 
-                setStatus('Updating avatar...');
-                const avatarRes = await profileApi.updateAvatar(profileId, {
-                    avatarUrl: uploadRes.path,
-                });
-
-                if (!avatarRes.success) {
-                    setErrors(avatarRes.errors || [avatarRes.message || 'Failed to update avatar']);
-                    setLoading(false);
-                    setStatus('');
-                    return;
-                }
-
-                setSelectedFile(null);
+                avatarUrl = uploadRes.path;
             }
+
             const payload =
                 mode === 'create'
                     ? {
@@ -129,6 +120,8 @@ export function ProfileForm({
                         jobTitle: form.jobTitle || null,
                         yearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience) : null,
                         availableForHire: form.availableForHire,
+                        avatarUrl,
+                        coverImageUrl: form.coverImageUrl || null,
                         email: form.email || null,
                         phoneNumber: form.phoneNumber || null,
                         location: form.location || null,
@@ -143,7 +136,7 @@ export function ProfileForm({
             const res = await onSubmit(payload);
 
             if (res.success) {
-                router.push('/admin/profiles');
+                router.push('/dashboard/profile');
                 router.refresh();
             } else {
                 setErrors(res.errors || [res.message]);

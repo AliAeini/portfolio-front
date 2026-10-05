@@ -1,3 +1,23 @@
+
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface UserInfo {
+    id: string;
+    email: string;
+    fullName: string | null;
+    role: string;
+}
+
+export interface AuthResponse {
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpiresAt: string;
+    user: UserInfo;
+}
+
 export interface ApiResponse<T> {
     success: boolean;
     message: string;
@@ -6,13 +26,37 @@ export interface ApiResponse<T> {
     timestamp: string;
 }
 
+export interface ProfileSummary {
+    id: string;
+    fullName: string;
+    jobTitle: string | null;
+    jobCategoryName: string | null;
+    avatarUrl: string | null;
+    location: string | null;
+    availableForHire: boolean;
+    skillCount: number;
+}
+
 export interface Profile {
     id: string;
     fullName: string;
     bio: string;
+    shortBio: string | null;
+    jobCategoryId: string | null;
+    jobCategoryName: string | null;
+    jobTitle: string | null;
+    yearsOfExperience: number | null;
+    availableForHire: boolean;
     avatarUrl: string | null;
+    coverImageUrl: string | null;
     email: string | null;
+    phoneNumber: string | null;
     location: string | null;
+    website: string | null;
+    dateOfBirth: string | null;
+    nationality: string | null;
+    languages: string | null;
+    hobbies: string | null;
     createdAt: string;
     updatedAt: string | null;
 }
@@ -28,8 +72,19 @@ export interface CreateProfileRequest {
 export interface UpdateProfileRequest {
     fullName: string;
     bio: string;
-    email?: string;
-    location?: string;
+    shortBio?: string | null;
+    jobCategoryId?: string | null;
+    jobTitle?: string | null;
+    yearsOfExperience?: number | null;
+    availableForHire: boolean;
+    email?: string | null;
+    phoneNumber?: string | null;
+    location?: string | null;
+    website?: string | null;
+    dateOfBirth?: string | null;
+    nationality?: string | null;
+    languages?: string | null;
+    hobbies?: string | null;
 }
 
 export interface UpdateAvatarRequest {
@@ -42,13 +97,34 @@ export interface UploadResponse {
     message?: string;
 }
 
-export interface Skill {
+export interface JobCategory {
     id: string;
     name: string;
-    level: number;
+    description: string | null;
     displayOrder: number;
+}
+
+export interface SocialLink {
+    id: string;
+    profileId: string;
+    platform: string;
+    url: string;
     iconUrl: string | null;
-    category: SkillCategory | null;
+    displayOrder: number;
+}
+
+export interface CreateSocialLinkRequest {
+    platform: string;
+    url: string;
+    iconUrl?: string | null;
+    displayOrder?: number;
+}
+
+export interface UpdateSocialLinkRequest {
+    platform: string;
+    url: string;
+    iconUrl?: string | null;
+    displayOrder?: number;
 }
 
 export interface SkillCategory {
@@ -59,12 +135,13 @@ export interface SkillCategory {
     skillCount: number;
 }
 
-export interface GroupedSkills {
-    categoryId: string;
-    categoryName: string;
-    categoryDescription: string | null;
-    categoryDisplayOrder: number;
-    skills: SkillItem[];
+export interface Skill {
+    id: string;
+    name: string;
+    level: number;
+    displayOrder: number;
+    iconUrl: string | null;
+    category: SkillCategory | null;
 }
 
 export interface SkillItem {
@@ -73,6 +150,14 @@ export interface SkillItem {
     level: number;
     displayOrder: number;
     iconUrl: string | null;
+}
+
+export interface GroupedSkills {
+    categoryId: string;
+    categoryName: string;
+    categoryDescription: string | null;
+    categoryDisplayOrder: number;
+    skills: SkillItem[];
 }
 
 export interface ProfileSkill {
@@ -96,6 +181,13 @@ export interface UpdateProfileSkillRequest {
     displayOrder?: number;
 }
 
+export interface AuthUser {
+    id: string;
+    email: string;
+    fullName: string | null;
+    role: string;
+}
+
 export interface LookupSkillCategory {
     id: string;
     name: string;
@@ -108,19 +200,4 @@ export interface LookupProjectCategory {
     name: string;
     description: string | null;
     displayOrder: number;
-}
-
-export interface AuthUser {
-    id: string;
-    email: string;
-    fullName: string | null;
-    role: string;
-}
-
-export interface AuthState {
-    user: AuthUser | null;
-    accessToken: string | null;
-    refreshToken: string | null;
-    expiresAt: string | null;
-    isAuthenticated: boolean;
 }

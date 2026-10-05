@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AppProviders } from '@/components/providers/AppProviders';
 
 export const metadata: Metadata = {
     title: 'Portfolio',
@@ -12,9 +13,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className="dark" suppressHydrationWarning>
-            <body suppressHydrationWarning className="bg-gray-950 text-gray-100 antialiased">
-                {children}
+        <html suppressHydrationWarning lang="en" className="dark">
+            <body suppressHydrationWarning className="bg-background text-foreground antialiased">
+                <AppProviders>{children}</AppProviders>
             </body>
         </html>
     );

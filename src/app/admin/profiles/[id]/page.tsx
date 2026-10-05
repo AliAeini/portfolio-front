@@ -6,10 +6,9 @@ import { ProfileForm } from '@/components/profile/ProfileForm';
 import { profileApi } from '@/lib/api';
 import type { ApiResponse, UpdateProfileRequest } from '@/lib/types';
 
-export default function EditProfilePage() {
+export default function GeneralTab() {
     const params = useParams();
     const id = params.id as string;
-
     const [initialData, setInitialData] = useState<{
         fullName: string;
         bio: string;
@@ -42,29 +41,13 @@ export default function EditProfilePage() {
         load();
     }, [id]);
 
-    if (error) {
-        return (
-            <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-                <div className="bg-red-950/50 border border-red-800 text-red-200 rounded-xl p-6 max-w-md">
-                    <h2 className="font-semibold mb-2">Error</h2>
-                    <p>{error}</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!initialData) {
-        return (
-            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-                <div className="text-gray-400">Loading...</div>
-            </div>
-        );
-    }
+    if (error) return <div className="p-8 text-red-400">Error: {error}</div>;
+    if (!initialData) return <div className="p-8 text-muted">Loading...</div>;
 
     return (
         <ProfileForm
             mode="edit"
-            title="Edit Profile"
+            title=""
             initialData={initialData}
             onSubmit={(data) => profileApi.update(id, data as UpdateProfileRequest)}
         />

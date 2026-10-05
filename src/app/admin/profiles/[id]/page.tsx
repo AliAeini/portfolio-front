@@ -3,19 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ProfileForm } from '@/components/profile/ProfileForm';
-import { profileApi } from '@/lib/api';
-import type { ApiResponse, UpdateProfileRequest } from '@/lib/types';
+import type { ApiResponse, Profile, UpdateProfileRequest } from '@/lib/types';
+import { profileApi } from '@/lib/profileApi';
 
 export default function GeneralTab() {
     const params = useParams();
     const id = params.id as string;
-    const [initialData, setInitialData] = useState<{
-        fullName: string;
-        bio: string;
-        email?: string | null;
-        location?: string | null;
-        avatarUrl?: string | null;
-    } | null>(null);
+
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -23,13 +18,7 @@ export default function GeneralTab() {
             try {
                 const res = await profileApi.getById(id);
                 if (res.success && res.data) {
-                    setInitialData({
-                        fullName: res.data.fullName,
-                        bio: res.data.bio,
-                        email: res.data.email || '',
-                        location: res.data.location || '',
-                        avatarUrl: res.data.avatarUrl,
-                    });
+                    setProfile(res.data);
                 } else {
                     setError(res.message);
                 }
@@ -42,14 +31,17 @@ export default function GeneralTab() {
     }, [id]);
 
     if (error) return <div className="p-8 text-red-400">Error: {error}</div>;
-    if (!initialData) return <div className="p-8 text-muted">Loading...</div>;
+    if (!profile) return <div className="p-8 text-muted">Loading...</div>;
 
     return (
-        <ProfileForm
-            mode="edit"
-            title=""
-            initialData={initialData}
-            onSubmit={(data) => profileApi.update(id, data as UpdateProfileRequest)}
-        />
+        <div className="p-8 max-w-4xl mx-auto">
+            <ProfileForm
+                mode="edit"
+                title="General Information"
+                profileId={id}
+                initialData={profile}
+                onSubmit={(data) => profileApi.update(id, data as UpdateProfileRequest)}
+            />
+        </div>
     );
 }

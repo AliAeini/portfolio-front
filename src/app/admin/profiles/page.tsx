@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { profileApi } from '@/lib/api';
-import type { Profile, ApiResponse } from '@/lib/types';
+import type { ProfileSummary, ApiResponse } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
+import { profileApi } from '@/lib/profileApi';
 
 export default function ProfilesPage() {
-    const [profiles, setProfiles] = useState<Profile[]>([]);
+    const [profiles, setProfiles] = useState<ProfileSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -88,7 +88,7 @@ export default function ProfilesPage() {
                                 {profiles.map((p) => (
                                     <tr key={p.id} className="border-b border-gray-800 last:border-0 hover:bg-gray-800/30 transition-colors">
                                         <td className="px-6 py-4 text-gray-100">{p.fullName}</td>
-                                        <td className="px-6 py-4 text-gray-400">{p.email || '—'}</td>
+                                        <td className="px-6 py-4 text-gray-400">{p.jobTitle || '—'}</td>
                                         <td className="px-6 py-4 text-gray-400">{p.location || '—'}</td>
                                         <td className="px-6 py-4 text-right space-x-2">
                                             <Link

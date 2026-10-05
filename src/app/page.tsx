@@ -1,18 +1,32 @@
-export default function Home() {
+import { profileApi } from '@/lib/api';
+import { Navbar } from '@/components/sections/Navbar';
+import { Hero } from '@/components/sections/Hero';
+import { TechStrip } from '@/components/sections/TechStrip';
+import { About } from '@/components/sections/About';
+import { Projects } from '@/components/sections/Projects';
+import { Contact } from '@/components/sections/Contact';
+import { Footer } from '@/components/sections/Footer';
+
+export default async function HomePage() {
+    let profile = null;
+    try {
+        const res = await profileApi.getById("a4c151f7-a190-4db0-a4a1-3bb7e376ff65");
+        if (res.success && res.data && res.data.id) {
+            profile = res.data
+        }
+    } catch {
+        // ignore
+    }
+
     return (
-        <main className="min-h-screen bg-gray-950 flex items-center justify-center p-8">
-            <div className="text-center">
-                <h1 className="text-5xl font-bold text-gray-100 mb-4">
-                    Welcome to My Portfolio
-                </h1>
-                <p className="text-gray-400 mb-8">Coming soon...</p>
-                <a
-                    href="/admin/profiles"
-                    className="text-blue-400 hover:text-blue-300 underline"
-                >
-                    Admin Panel →
-                </a>
-            </div>
+        <main className="min-h-screen bg-[#0f1419]">
+            <Navbar />
+            <Hero profile={profile} />
+            <TechStrip />
+            <About profile={profile} />
+            <Projects />
+            <Contact />
+            <Footer />
         </main>
     );
 }

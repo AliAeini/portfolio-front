@@ -56,7 +56,6 @@ export function AvatarUploader({
     return (
         <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-300">Avatar</label>
-
             <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-800 border-2 border-gray-700 flex items-center justify-center">
                     {imageProfile ? (

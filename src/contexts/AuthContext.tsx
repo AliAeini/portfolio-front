@@ -8,8 +8,8 @@ import {
     useState,
     ReactNode,
 } from 'react';
-import { authApi, LoginRequest, AuthResponse } from '@/lib/api';
-import type { AuthUser } from '@/lib/types';
+import type { AuthResponse, AuthUser, LoginRequest } from '@/lib/types';
+import { authApi } from '@/lib/authApi';
 
 interface AuthContextValue {
     user: AuthUser | null;
@@ -43,10 +43,7 @@ function clearStorage() {
     localStorage.removeItem(STORAGE_KEYS.USER);
 }
 
-function loadFromStorage(): {
-    user: AuthUser | null;
-    accessToken: string | null;
-} {
+function loadFromStorage(): { user: AuthUser | null; accessToken: string | null } {
     try {
         const userJson = localStorage.getItem(STORAGE_KEYS.USER);
         const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -89,13 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const userData: AuthUser = {
-            id: '', 
-            email: data.email,
-            fullName: null,
-            role: 'Owner',
+            id: res.data.user.id,
+            email: res.data.user.email,
+            fullName: res.data.user.fullName,
+            role: res.data.user.role,
         };
 
         saveToStorage(userData, res.data);
+
         setUser(userData);
         setAccessToken(res.data.accessToken);
     }, []);

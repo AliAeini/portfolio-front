@@ -1,46 +1,83 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { Select } from '@/components/ui/Select';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { AvatarUploader } from './AvatarUploader';
-import { uploadApi } from '@/lib/api';
-import type { ApiResponse, CreateProfileRequest, UpdateProfileRequest } from '@/lib/types';
+import type {
+    ApiResponse,
+    Profile,
+    CreateProfileRequest,
+    UpdateProfileRequest,
+    JobCategory,
+} from '@/lib/types';
+import { uploadApi } from '@/lib/uploadApi';
+import { profileApi } from '@/lib/profileApi';
+import { jobCategoryApi } from '@/lib/jobCategoryApi';
 
 interface ProfileFormProps {
-    initialData?: {
-        fullName: string;
-        bio: string;
-        email?: string | null;
-        location?: string | null;
-        avatarUrl?: string | null;
-    };
-    onSubmit: (data: CreateProfileRequest | UpdateProfileRequest) => Promise<ApiResponse<unknown>>;
     mode: 'create' | 'edit';
     title: string;
+    profileId?: string;
+    initialData?: Profile;
+    onSubmit: (data: CreateProfileRequest | UpdateProfileRequest) => Promise<ApiResponse<unknown>>;
 }
 
-export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormProps) {
+export function ProfileForm({
+    mode,
+    title,
+    profileId,
+    initialData,
+    onSubmit,
+}: ProfileFormProps) {
     const router = useRouter();
 
     const [form, setForm] = useState({
         fullName: initialData?.fullName || '',
         bio: initialData?.bio || '',
+        shortBio: initialData?.shortBio || '',
+        jobCategoryId: initialData?.jobCategoryId || '',
+        jobTitle: initialData?.jobTitle || '',
+        yearsOfExperience: initialData?.yearsOfExperience?.toString() || '',
+        availableForHire: initialData?.availableForHire || false,
         email: initialData?.email || '',
+        phoneNumber: initialData?.phoneNumber || '',
         location: initialData?.location || '',
+        website: initialData?.website || '',
+        dateOfBirth: initialData?.dateOfBirth?.split('T')[0] || '',
+        nationality: initialData?.nationality || '',
+        languages: initialData?.languages || '',
+        hobbies: initialData?.hobbies || '',
     });
 
     const [ownerPassword, setOwnerPassword] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [jobCategories, setJobCategories] = useState<JobCategory[]>([]);
     const [errors, setErrors] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState<string>('');
+    const [status, setStatus] = useState('');
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-        setForm({ ...form, [e.target.name]: e.target.value });
+    useEffect(() => {
+        jobCategoryApi.getAll().then((res) => {
+            if (res.success && res.data) setJobCategories(res.data);
+        });
+    }, []);
+
+    function handleChange(
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) {
+        const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
+
+        setForm({
+            ...form,
+            [name]: type === 'checkbox' ? checked : value,
+        });
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -50,30 +87,59 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
         setStatus('');
 
         try {
-            let avatarUrl: string | null = null;
-
-            if (mode === 'edit' && selectedFile) {
+            if (mode === 'edit' && selectedFile && profileId) {
                 setStatus('Uploading avatar...');
-
                 const uploadRes = await uploadApi.uploadAvatar(selectedFile);
 
                 if (!uploadRes.success || !uploadRes.path) {
-                    setErrors(!uploadRes || [uploadRes.message || 'Upload failed']);
+                    setErrors([uploadRes.message || 'Upload failed']);
                     setLoading(false);
                     setStatus('');
                     return;
                 }
 
-                avatarUrl = uploadRes.path;
+                setStatus('Updating avatar...');
+                const avatarRes = await profileApi.updateAvatar(profileId, {
+                    avatarUrl: uploadRes.path,
+                });
+
+                if (!avatarRes.success) {
+                    setErrors(avatarRes.errors || [avatarRes.message || 'Failed to update avatar']);
+                    setLoading(false);
+                    setStatus('');
+                    return;
+                }
+
+                setSelectedFile(null);
             }
-
-            setStatus('Saving profile...');
-
             const payload =
                 mode === 'create'
-                    ? { ...form, ownerPassword }
-                    : { ...form, avatarUrl };
+                    ? {
+                        fullName: form.fullName,
+                        bio: form.bio,
+                        email: form.email || undefined,
+                        location: form.location || undefined,
+                        ownerPassword,
+                    }
+                    : {
+                        fullName: form.fullName,
+                        bio: form.bio,
+                        shortBio: form.shortBio || null,
+                        jobCategoryId: form.jobCategoryId || null,
+                        jobTitle: form.jobTitle || null,
+                        yearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience) : null,
+                        availableForHire: form.availableForHire,
+                        email: form.email || null,
+                        phoneNumber: form.phoneNumber || null,
+                        location: form.location || null,
+                        website: form.website || null,
+                        dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth).toISOString() : null,
+                        nationality: form.nationality || null,
+                        languages: form.languages || null,
+                        hobbies: form.hobbies || null,
+                    };
 
+            setStatus('Saving profile...');
             const res = await onSubmit(payload);
 
             if (res.success) {
@@ -92,93 +158,180 @@ export function ProfileForm({ initialData, onSubmit, mode, title }: ProfileFormP
     }
 
     return (
-        <div className="min-h-screen bg-gray-950">
-            <div className="max-w-2xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-100">{title}</h1>
-                    <p className="text-gray-400 mt-2">
-                        {mode === 'create'
-                            ? 'Add a new profile to your portfolio.'
-                            : 'Update the profile information below.'}
-                    </p>
-                </div>
-
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-lg space-y-6">
-                    {errors.length > 0 && (
-                        <Alert variant="error" title="Please fix the following issues:" messages={errors} />
-                    )}
+        <div className="space-y-6">
+            {errors.length > 0 && <Alert variant="error" messages={errors} />}
+            {mode === 'edit' && (
+                <AvatarUploader
+                    currentAvatarUrl={initialData?.avatarUrl}
+                    selectedFile={selectedFile}
+                    onFileSelected={setSelectedFile}
+                />
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                    <Input
+                        label="Full Name"
+                        name="fullName"
+                        value={form.fullName}
+                        onChange={handleChange}
+                        required
+                        maxLength={200}
+                    />
                     {mode === 'edit' && (
-                        <AvatarUploader
-                            currentAvatarUrl={initialData?.avatarUrl}
-                            selectedFile={selectedFile}
-                            onFileSelected={setSelectedFile}
-                        />
-                    )}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <Input
-                            label="Full Name"
-                            name="fullName"
-                            value={form.fullName}
-                            onChange={handleChange}
-                            required
-                            maxLength={200}
-                        />
-
-                        <Textarea
-                            label="Bio"
-                            name="bio"
-                            value={form.bio}
-                            onChange={handleChange}
-                            required
-                            rows={4}
-                            maxLength={2000}
-                        />
-
-                        <Input
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            maxLength={200}
-                        />
-
-                        <Input
-                            label="Location"
-                            name="location"
-                            value={form.location}
-                            onChange={handleChange}
-                            maxLength={200}
-                        />
-
-                        {mode === 'create' && (
+                        <>
                             <Input
-                                label="Owner Password"
-                                name="ownerPassword"
-                                type="password"
-                                value={ownerPassword}
-                                onChange={(e) => setOwnerPassword(e.target.value)}
-                                placeholder="At least 8 characters"
-                                required
+                                label="Job Title"
+                                name="jobTitle"
+                                value={form.jobTitle}
+                                onChange={handleChange}
+                                placeholder="e.g., Senior .NET Developer"
+                                maxLength={200}
                             />
-                        )}
+                            <Select
+                                label="Job Category"
+                                name="jobCategoryId"
+                                value={form.jobCategoryId}
+                                onChange={handleChange}
+                                placeholder="Select a category..."
+                                options={jobCategories.map((c) => ({ value: c.id, label: c.name }))}
+                            />
+                        </>
+                    )}
 
-                        <div className="flex gap-3 pt-4 border-t border-gray-800">
-                            <Button type="submit" loading={loading} variant="primary">
-                                {status || (mode === 'create' ? 'Create Profile' : 'Save Changes')}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={() => router.back()}
-                                disabled={loading}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </form>
+                    <Textarea
+                        label="Bio"
+                        name="bio"
+                        value={form.bio}
+                        onChange={handleChange}
+                        required
+                        rows={4}
+                        maxLength={2000}
+                    />
                 </div>
-            </div>
+                {mode === 'edit' && (
+                    <>
+                        <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                            <h3 className="text-lg font-semibold text-foreground">Short Bio</h3>
+                            <Textarea
+                                label="Short Bio"
+                                name="shortBio"
+                                value={form.shortBio}
+                                onChange={handleChange}
+                                rows={2}
+                                maxLength={500}
+                            />
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                            <h3 className="text-lg font-semibold text-foreground">Professional</h3>
+                            <Input
+                                label="Years of Experience"
+                                name="yearsOfExperience"
+                                type="number"
+                                value={form.yearsOfExperience}
+                                onChange={handleChange}
+                                min={0}
+                                max={70}
+                            />
+                            <Checkbox
+                                label="Available for hire"
+                                name="availableForHire"
+                                checked={form.availableForHire}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                            <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
+                            <Input
+                                label="Email"
+                                name="email"
+                                type="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                maxLength={200}
+                            />
+                            <Input
+                                label="Phone Number"
+                                name="phoneNumber"
+                                value={form.phoneNumber}
+                                onChange={handleChange}
+                                maxLength={50}
+                            />
+                            <Input
+                                label="Location"
+                                name="location"
+                                value={form.location}
+                                onChange={handleChange}
+                                maxLength={200}
+                            />
+                            <Input
+                                label="Website"
+                                name="website"
+                                type="url"
+                                value={form.website}
+                                onChange={handleChange}
+                                maxLength={500}
+                            />
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                            <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+
+                            <Input
+                                label="Date of Birth"
+                                name="dateOfBirth"
+                                type="date"
+                                value={form.dateOfBirth}
+                                onChange={handleChange}
+                            />
+                            <Input
+                                label="Nationality"
+                                name="nationality"
+                                value={form.nationality}
+                                onChange={handleChange}
+                                maxLength={100}
+                            />
+                            <Input
+                                label="Languages"
+                                name="languages"
+                                value={form.languages}
+                                onChange={handleChange}
+                                placeholder="Persian,English"
+                                maxLength={500}
+                            />
+                            <Textarea
+                                label="Hobbies"
+                                name="hobbies"
+                                value={form.hobbies}
+                                onChange={handleChange}
+                                rows={2}
+                                maxLength={1000}
+                            />
+                        </div>
+                    </>
+                )}
+                {mode === 'create' && (
+                    <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                        <h3 className="text-lg font-semibold text-foreground">Owner Account</h3>
+                        <Input
+                            label="Owner Password"
+                            name="ownerPassword"
+                            type="password"
+                            value={ownerPassword}
+                            onChange={(e) => setOwnerPassword(e.target.value)}
+                            placeholder="At least 8 characters"
+                            required
+                        />
+                    </div>
+                )}
+                <div className="flex gap-3">
+                    <Button type="submit" loading={loading} variant="primary">
+                        {status || (mode === 'create' ? 'Create Profile' : 'Save Changes')}
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={() => router.back()} disabled={loading}>
+                        Cancel
+                    </Button>
+                </div>
+            </form>
         </div>
     );
 }

@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { profileSkillApi, skillApi } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import type {
     ProfileSkill,
     GroupedSkills,
     ApiResponse,
 } from '@/lib/types';
+import { profileSkillApi } from '@/lib/profileSkillApi';
+import { skillApi } from '@/lib/skillApi';
 
 interface ProfileSkillsManagerProps {
     profileId: string;

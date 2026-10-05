@@ -1,4 +1,3 @@
-import { profileApi } from '@/lib/api';
 import { Navbar } from '@/components/sections/Navbar';
 import { Hero } from '@/components/sections/Hero';
 import { TechStrip } from '@/components/sections/TechStrip';
@@ -6,6 +5,7 @@ import { About } from '@/components/sections/About';
 import { Projects } from '@/components/sections/Projects';
 import { Contact } from '@/components/sections/Contact';
 import { Footer } from '@/components/sections/Footer';
+import { profileApi } from '@/lib/profileApi';
 
 export default async function HomePage() {
     let profile = null;

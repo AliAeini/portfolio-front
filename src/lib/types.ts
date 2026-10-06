@@ -257,3 +257,49 @@ export interface DegreeLevel {
     value: number;
     name: string;
 }
+
+export interface Experience {
+    id: string;
+    profileId: string;
+    company: string;
+    position: string;
+    employmentType: number;
+    employmentTypeName: string;
+    startDate: string;
+    endDate: string | null;
+    description: string | null;
+    location: string | null;
+    companyUrl: string | null;
+    displayOrder: number;
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export interface CreateExperienceRequest {
+    company: string;
+    position: string;
+    employmentType: number;
+    startDate: string;
+    endDate?: string | null;
+    description?: string | null;
+    location?: string | null;
+    companyUrl?: string | null;
+    displayOrder?: number;
+}
+
+export interface UpdateExperienceRequest {
+    company: string;
+    position: string;
+    employmentType: number;
+    startDate: string;
+    endDate?: string | null;
+    description?: string | null;
+    location?: string | null;
+    companyUrl?: string | null;
+    displayOrder: number;
+}
+
+export interface EmploymentType {
+    value: number;
+    name: string;
+}

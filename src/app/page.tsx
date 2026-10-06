@@ -6,9 +6,11 @@ import { Projects } from '@/components/sections/Projects';
 import { Contact } from '@/components/sections/Contact';
 import { Footer } from '@/components/sections/Footer';
 import { profileApi } from '@/lib/profileApi';
+// import { useAuth } from '@/contexts/AuthContext';
 
 export default async function HomePage() {
     let profile = null;
+    // const { ...rest } = useAuth()
     try {
         const res = await profileApi.getById("a4c151f7-a190-4db0-a4a1-3bb7e376ff65");
         if (res.success && res.data && res.data.id) {

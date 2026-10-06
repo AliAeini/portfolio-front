@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
+import { Spinner } from '@/components/ui/Spinner';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     const router = useRouter();
@@ -15,13 +16,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         }
     }, [isAuthenticated, isLoading, router]);
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-muted">Loading...</div>
-            </div>
-        );
-    }
+    if (isLoading) return <Spinner />;
 
     if (!isAuthenticated) {
         return null;

@@ -11,7 +11,6 @@ import { Alert } from '@/components/ui/Alert';
 export default function RegisterPage() {
     const router = useRouter();
     const { register } = useAuth();
-
     const [form, setForm] = useState({
         fullName: '',
         email: '',

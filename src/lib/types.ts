@@ -211,3 +211,49 @@ export interface LookupProjectCategory {
     description: string | null;
     displayOrder: number;
 }
+
+export interface Education {
+    id: string;
+    profileId: string;
+    institution: string;
+    degree: number;
+    degreeName: string;
+    field: string;
+    startDate: string;
+    endDate: string | null;
+    description: string | null;
+    location: string | null;
+    grade: string | null;
+    displayOrder: number;
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export interface CreateEducationRequest {
+    institution: string;
+    degree: number;
+    field: string;
+    startDate: string;
+    endDate?: string | null;
+    description?: string | null;
+    location?: string | null;
+    grade?: string | null;
+    displayOrder?: number;
+}
+
+export interface UpdateEducationRequest {
+    institution: string;
+    degree: number;
+    field: string;
+    startDate: string;
+    endDate?: string | null;
+    description?: string | null;
+    location?: string | null;
+    grade?: string | null;
+    displayOrder: number;
+}
+
+export interface DegreeLevel {
+    value: number;
+    name: string;
+}

@@ -55,16 +55,16 @@ export function AvatarUploader({
 
     return (
         <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-300">Avatar</label>
             <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-800 border-2 border-gray-700 flex items-center justify-center">
-                    {imageProfile ? (
-                        <img src={imageProfile} alt="Avatar preview" className="w-full h-full object-cover" />
-                    ) : (
-                        <span className="text-gray-500 text-xs">No image</span>
-                    )}
+                    {
+                        imageProfile ? (
+                            <img src={imageProfile} alt="Avatar preview" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-gray-500 text-xs">No image</span>
+                        )
+                    }
                 </div>
-
                 <div className="flex flex-col gap-2">
                     <input
                         ref={fileInputRef}
@@ -80,7 +80,6 @@ export function AvatarUploader({
                     >
                         {preview ? 'Change Image' : 'Select Image'}
                     </label>
-
                     {selectedFile && (
                         <button
                             type="button"
@@ -92,11 +91,9 @@ export function AvatarUploader({
                     )}
                 </div>
             </div>
-
             <p className="text-xs text-gray-500">
                 Allowed: JPG, PNG, WebP, GIF — Max 5MB
             </p>
-
             {errors.length > 0 && <Alert variant="error" messages={errors} />}
         </div>
     );

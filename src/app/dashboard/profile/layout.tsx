@@ -18,7 +18,9 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
                 </div>
             </div>
             {user?.profileId && <ProfileTabs profileId={user.profileId} />}
-            <div>{children}</div>
+            <div className='p-8 max-w-4xl mx-auto'>
+                {children}
+            </div>
         </div>
     );
 }

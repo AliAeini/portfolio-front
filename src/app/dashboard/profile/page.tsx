@@ -5,6 +5,7 @@ import { ProfileForm } from '@/components/profile/ProfileForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { profileApi } from '@/lib/profileApi';
 import type { ApiResponse, Profile, UpdateProfileRequest } from '@/lib/types';
+import { Spinner } from '@/components/ui/Spinner';
 
 export default function GeneralTab() {
     const { user } = useAuth();
@@ -31,17 +32,15 @@ export default function GeneralTab() {
     }, [user]);
 
     if (error) return <div className="p-8 text-red-400">Error: {error}</div>;
-    if (!profile || !user?.profileId) return <div className="p-8 text-muted">Loading...</div>;
+    if (!profile || !user?.profileId) return <Spinner />;
 
     return (
-        <div className="p-8 max-w-4xl mx-auto">
-            <ProfileForm
-                mode="edit"
-                title="General Information"
-                profileId={user.profileId}
-                initialData={profile}
-                onSubmit={(data) => profileApi.update(user.profileId!, data as UpdateProfileRequest)}
-            />
-        </div>
+        <ProfileForm
+            mode="edit"
+            title="General Information"
+            profileId={user.profileId}
+            initialData={profile}
+            onSubmit={(data) => profileApi.update(user.profileId!, data as UpdateProfileRequest)}
+        />
     );
 }

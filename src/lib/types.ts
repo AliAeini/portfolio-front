@@ -303,3 +303,89 @@ export interface EmploymentType {
     value: number;
     name: string;
 }
+
+export interface Project {
+    id: string;
+    profileId: string;
+    projectCategoryId: string | null;
+    projectCategoryName: string | null;
+    title: string;
+    description: string;
+    shortDescription: string | null;
+    githubUrl: string | null;
+    liveUrl: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    isFeatured: boolean;
+    displayOrder: number;
+    skills: ProjectSkill[];
+    images: ProjectImage[];
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export interface ProjectSkill {
+    id: string;
+    profileSkillId: string;
+    skillId: string;
+    skillName: string;
+    skillIconUrl: string | null;
+    categoryName: string | null;
+    level: number;
+    displayOrder: number;
+}
+
+export interface ProjectImage {
+    id: string;
+    imageUrl: string;
+    caption: string | null;
+    isCover: boolean;
+    displayOrder: number;
+}
+
+export interface CreateProjectRequest {
+    title: string;
+    description: string;
+    projectCategoryId?: string | null;
+    shortDescription?: string | null;
+    githubUrl?: string | null;
+    liveUrl?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    isFeatured?: boolean;
+    displayOrder?: number;
+    profileSkillIds?: string[];
+    images?: ProjectImageInput[];
+}
+
+export interface UpdateProjectRequest {
+    title: string;
+    description: string;
+    projectCategoryId?: string | null;
+    shortDescription?: string | null;
+    githubUrl?: string | null;
+    liveUrl?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    isFeatured: boolean;
+    displayOrder: number;
+    profileSkillIds?: string[];
+    images?: ProjectImageInput[];
+}
+
+export interface ProjectImageInput {
+    id?: string | null;      
+    imageUrl?: string | null; 
+    file?: File;
+    previewUrl?: string;
+    caption?: string | null;
+    isCover: boolean;
+    displayOrder: number;
+}
+
+export interface ProjectCategory {
+    id: string;
+    name: string;
+    description: string | null;
+    displayOrder: number;
+}

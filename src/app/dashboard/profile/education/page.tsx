@@ -1,10 +1,15 @@
+'use client';
+
+import { EducationsManager } from '@/components/profile/EducationsManager';
+import { Spinner } from '@/components/ui/Spinner';
+import { useAuth } from '@/contexts/AuthContext';
+
 export default function EducationTab() {
+    const { user } = useAuth();
+
+    if (!user?.profileId) return <Spinner />;
+
     return (
-        <div className="p-8 max-w-6xl mx-auto">
-            <div className="bg-card border border-border rounded-lg p-12 text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Education</h2>
-                <p className="text-muted">Coming soon</p>
-            </div>
-        </div>
+        <EducationsManager profileId={user.profileId} />
     );
 }

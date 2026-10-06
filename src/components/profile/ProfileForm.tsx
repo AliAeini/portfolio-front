@@ -92,7 +92,6 @@ export function ProfileForm({
             if (selectedFile) {
                 setStatus('Uploading avatar...');
                 const uploadRes = await uploadApi.uploadAvatar(selectedFile);
-
                 if (!uploadRes.success || !uploadRes.path) {
                     setErrors([uploadRes.message || 'Upload failed']);
                     setLoading(false);
@@ -151,18 +150,22 @@ export function ProfileForm({
     }
 
     return (
-        <div className="space-y-6">
+        <div className="">
             {errors.length > 0 && <Alert variant="error" messages={errors} />}
-            {mode === 'edit' && (
-                <AvatarUploader
-                    currentAvatarUrl={initialData?.avatarUrl}
-                    selectedFile={selectedFile}
-                    onFileSelected={setSelectedFile}
-                />
-            )}
+            {title && <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-foreground pb-6">
+                    {title}
+                </h2>
+            </div>}
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                    {mode === 'edit' && (
+                        <AvatarUploader
+                            currentAvatarUrl={initialData?.avatarUrl}
+                            selectedFile={selectedFile}
+                            onFileSelected={setSelectedFile}
+                        />
+                    )}
                     <Input
                         label="Full Name"
                         name="fullName"

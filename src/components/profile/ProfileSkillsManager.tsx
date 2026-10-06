@@ -70,6 +70,14 @@ export function ProfileSkillsManager({ profileId }: ProfileSkillsManagerProps) {
     }
 
     async function handleUpdateLevel(profileSkillId: string, level: number) {
+        // 👈 ۱. ذخیره مقدار قبلی برای rollback
+        const previousSkills = mySkills;
+
+        // 👈 ۲. Optimistic update: Slider رو بلافاصله آپدیت کن
+        setMySkills((prev) =>
+            prev.map((s) => (s.id === profileSkillId ? { ...s, level } : s))
+        );
+
         try {
             const res = await profileSkillApi.update(profileId, profileSkillId, {
                 level,
@@ -77,11 +85,15 @@ export function ProfileSkillsManager({ profileId }: ProfileSkillsManagerProps) {
             });
 
             if (res.success && res.data) {
-                setMySkills(mySkills.map((s) => (s.id === profileSkillId ? res.data! : s)));
+                setMySkills((prev) =>
+                    prev.map((s) => (s.id === profileSkillId ? res.data! : s))
+                );
             } else {
+                setMySkills(previousSkills);
                 setErrors(res.errors || [res.message]);
             }
         } catch (err: unknown) {
+            setMySkills(previousSkills);
             const apiErr = err as ApiResponse<unknown>;
             setErrors(apiErr?.errors || [apiErr?.message || 'Failed to update']);
         }
@@ -178,8 +190,8 @@ export function ProfileSkillsManager({ profileId }: ProfileSkillsManagerProps) {
                     <button
                         onClick={() => setSelectedCategory('all')}
                         className={`px-3 py-1.5 rounded-full text-xs transition-colors ${selectedCategory === 'all'
-                                ? 'bg-accent text-white'
-                                : 'bg-card border border-border text-muted hover:text-foreground'
+                            ? 'bg-accent text-white'
+                            : 'bg-card border border-border text-muted hover:text-foreground'
                             }`}
                     >
                         All
@@ -189,8 +201,8 @@ export function ProfileSkillsManager({ profileId }: ProfileSkillsManagerProps) {
                             key={cat.categoryId}
                             onClick={() => setSelectedCategory(cat.categoryId)}
                             className={`px-3 py-1.5 rounded-full text-xs transition-colors ${selectedCategory === cat.categoryId
-                                    ? 'bg-accent text-white'
-                                    : 'bg-card border border-border text-muted hover:text-foreground'
+                                ? 'bg-accent text-white'
+                                : 'bg-card border border-border text-muted hover:text-foreground'
                                 }`}
                         >
                             {cat.categoryName} ({cat.skills.length})
@@ -212,8 +224,8 @@ export function ProfileSkillsManager({ profileId }: ProfileSkillsManagerProps) {
                                             disabled={added}
                                             onClick={() => handleAddSkill(skill.id)}
                                             className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${added
-                                                    ? 'bg-accent/20 text-accent cursor-not-allowed border border-accent'
-                                                    : 'bg-card border border-border text-muted hover:text-foreground hover:border-accent'
+                                                ? 'bg-accent/20 text-accent cursor-not-allowed border border-accent'
+                                                : 'bg-card border border-border text-muted hover:text-foreground hover:border-accent'
                                                 }`}
                                         >
                                             {added && '✓ '}

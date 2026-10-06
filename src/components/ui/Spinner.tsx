@@ -16,6 +16,7 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
         ${sizeClasses[size]}
         border-accent border-t-transparent
         rounded-full animate-spin
+        mx-auto mt-[20vh]
         ${className}
       `}
             role="status"

@@ -107,29 +107,6 @@ export interface JobCategory {
     displayOrder: number;
 }
 
-export interface SocialLink {
-    id: string;
-    profileId: string;
-    platform: string;
-    url: string;
-    iconUrl: string | null;
-    displayOrder: number;
-}
-
-export interface CreateSocialLinkRequest {
-    platform: string;
-    url: string;
-    iconUrl?: string | null;
-    displayOrder?: number;
-}
-
-export interface UpdateSocialLinkRequest {
-    platform: string;
-    url: string;
-    iconUrl?: string | null;
-    displayOrder?: number;
-}
-
 export interface SkillCategory {
     id: string;
     name: string;
@@ -374,8 +351,8 @@ export interface UpdateProjectRequest {
 }
 
 export interface ProjectImageInput {
-    id?: string | null;      
-    imageUrl?: string | null; 
+    id?: string | null;
+    imageUrl?: string | null;
     file?: File;
     previewUrl?: string;
     caption?: string | null;
@@ -388,4 +365,35 @@ export interface ProjectCategory {
     name: string;
     description: string | null;
     displayOrder: number;
+}
+
+export interface SocialLink {
+    id: string;
+    profileId: string;
+    platform: number;
+    platformName: string;
+    url: string;
+    iconUrl: string | null;
+    displayOrder: number;
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export interface CreateSocialLinkRequest {
+    platform: number;
+    url: string;
+    iconUrl?: string | null;
+    displayOrder?: number;
+}
+
+export interface UpdateSocialLinkRequest {
+    platform: number;
+    url: string;
+    iconUrl?: string | null;
+    displayOrder: number;
+}
+
+export interface SocialPlatform {
+    value: number;
+    name: string;
 }

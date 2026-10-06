@@ -1,5 +1,10 @@
-import { apiClient } from "./baseApi";
-import { ApiResponse, CreateSocialLinkRequest, SocialLink, UpdateSocialLinkRequest } from "./types";
+import { apiClient } from './baseApi';
+import type {
+    ApiResponse,
+    SocialLink,
+    CreateSocialLinkRequest,
+    UpdateSocialLinkRequest,
+} from './types';
 
 export const socialLinkApi = {
     getByProfile: async (profileId: string): Promise<ApiResponse<SocialLink[]>> => {
@@ -8,7 +13,15 @@ export const socialLinkApi = {
         );
         return res.data;
     },
-    add: async (
+
+    getById: async (profileId: string, id: string): Promise<ApiResponse<SocialLink>> => {
+        const res = await apiClient.get<ApiResponse<SocialLink>>(
+            `/api/profiles/${profileId}/social-links/${id}`
+        );
+        return res.data;
+    },
+
+    create: async (
         profileId: string,
         data: CreateSocialLinkRequest
     ): Promise<ApiResponse<SocialLink>> => {
@@ -18,6 +31,7 @@ export const socialLinkApi = {
         );
         return res.data;
     },
+
     update: async (
         profileId: string,
         id: string,
@@ -29,6 +43,7 @@ export const socialLinkApi = {
         );
         return res.data;
     },
+
     delete: async (profileId: string, id: string): Promise<ApiResponse<object>> => {
         const res = await apiClient.delete<ApiResponse<object>>(
             `/api/profiles/${profileId}/social-links/${id}`

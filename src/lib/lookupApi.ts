@@ -1,5 +1,5 @@
 import { apiClient } from "./baseApi";
-import { ApiResponse, DegreeLevel, EmploymentType, LookupProjectCategory, LookupSkillCategory, ProjectCategory } from "./types";
+import { ApiResponse, DegreeLevel, EmploymentType, LookupProjectCategory, LookupSkillCategory, SocialPlatform } from "./types";
 
 export const lookupApi = {
     getSkillCategories: async (): Promise<ApiResponse<LookupSkillCategory[]>> => {
@@ -20,6 +20,10 @@ export const lookupApi = {
     },
     getEmploymentTypes: async (): Promise<ApiResponse<EmploymentType[]>> => {
         const res = await apiClient.get<ApiResponse<EmploymentType[]>>('/api/lookups/employment-types');
+        return res.data;
+    },
+    getSocialPlatforms: async (): Promise<ApiResponse<SocialPlatform[]>> => {
+        const res = await apiClient.get<ApiResponse<SocialPlatform[]>>('/api/lookups/social-platforms');
         return res.data;
     },
 };

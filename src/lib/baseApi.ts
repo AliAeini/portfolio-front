@@ -1,7 +1,8 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import toast from 'react-hot-toast';
 import type { ApiResponse } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5082';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const apiClient = axios.create({
     baseURL: API_URL,
@@ -19,20 +20,46 @@ apiClient.interceptors.request.use((config) => {
 });
 
 apiClient.interceptors.response.use(
-    (response) => response,
-    (error: AxiosError<ApiResponse<unknown>>) => {
-        if (error.response?.data) {
-            return Promise.reject(error.response.data);
+    (response) => {
+        const method = response.config.method?.toLowerCase();
+
+        if (method && method !== 'get') {
+            const data = response.data as ApiResponse<unknown>;
+            if (data?.message) {
+                toast.success(data.message);
+            }
         }
-        return Promise.reject({
+
+        return response;
+    },
+    (error: AxiosError<ApiResponse<unknown>>) => {
+        const method = error.config?.method?.toLowerCase();
+
+        if (error.response?.data) {
+            const apiErr = error.response.data;
+
+            if (method && method !== 'get') {
+                const message = apiErr.errors?.[0] || apiErr.message || 'Something went wrong';
+                toast.error(message);
+            }
+
+            return Promise.reject(apiErr);
+        }
+
+        const networkError: ApiResponse<unknown> = {
             success: false,
             message: 'Network error.',
             data: null,
             errors: [error.message],
             timestamp: new Date().toISOString(),
-        } as ApiResponse<unknown>);
+        };
+
+        if (method && method !== 'get') {
+            toast.error('Network error. Please check your connection.');
+        }
+
+        return Promise.reject(networkError);
     }
 );
-
 
 export { API_URL };
